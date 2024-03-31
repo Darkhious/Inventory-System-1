@@ -10,6 +10,9 @@ const int ROWS = 300;
 string productName[ROWS] = {""};
 int productAmount[ROWS] = {0};
 int productPrice[ROWS] = {0};
+string productBought[ROWS] = {""};
+int amountBought[ROWS] = {0};
+int priceBought[ROWS] = {0};
 
 void clearScreen()
 {
@@ -54,6 +57,23 @@ string capitalize(string text)
     }
 
     return text;
+}
+
+void addInventory(string name, int quantitySold, int amountDue)
+{
+    int i;
+
+    for(i = 0; i < ROWS; i++)
+    {
+        if (productBought[i] == "")
+        {
+            productBought[i] = name;
+            amountBought[i] = quantitySold;
+            priceBought[i] = amountDue;
+
+            break;
+        }
+    }
 }
 
 void addProduct()
@@ -162,9 +182,10 @@ void sellItem()
 {
     int i, total;
     string itemName, quantity, response;
-    bool found;
+    bool found, stocksLeft;
 
     found = false;
+    stocksLeft = true;
 
     clearScreen();
 
@@ -204,36 +225,47 @@ void sellItem()
                             {
                                 cout<<"\nERROR: Please enter numbers only!\n\n";
                             }
+                        if (stoi(quantity) > productAmount[i])
+                        {
+                            stocksLeft = false;
+
+                            cout<<"\nERROR: Amount to buy exceeded stocks left.\n\n";
+                        }
                     }while (checkNumber(quantity));
 
-                    total = productPrice[i] * stoi(quantity); 
-
-                    cout<<"\nBUYING: "<<itemName<<endl;
-                    cout<<"QUANTITY: "<<quantity<<"x\n";
-                    cout<<"TOTAL AMOUNT DUE: "<<total<<" PHP\n\n";
-
-                    do
+                    if (stocksLeft)
                     {
-                        cout<<"Proceed to payment? (Y/N): ";
-                        getline(cin, response);
+                        total = productPrice[i] * stoi(quantity); 
 
-                        if (response == "Y" || response == "y")
+                        cout<<"\nBUYING: "<<itemName<<endl;
+                        cout<<"QUANTITY: "<<quantity<<"x\n";
+                        cout<<"TOTAL AMOUNT DUE: "<<total<<" PHP\n\n";
+
+                        do
                         {
-                            productAmount[i] = productAmount[i] - stoi(quantity);
+                            cout<<"Proceed to payment? (Y/N): ";
+                            getline(cin, response);
 
-                            break;
-                        }
-                            else if (response == "N" || response == "n")
+                            if (response == "Y" || response == "y")
                             {
-                                clearScreen();
+                                productAmount[i] = productAmount[i] - stoi(quantity);
+
+                                addInventory(itemName ,stoi(quantity), total);
 
                                 break;
                             }
-                                else
+                                else if (response == "N" || response == "n")
                                 {
-                                    cout<<"\nPlease input Y/N only!\n\n";
+                                    clearScreen();
+
+                                    break;
                                 }
-                    }while (true);
+                                    else
+                                    {
+                                        cout<<"\nPlease input Y/N only!\n\n";
+                                    }
+                        }while (true);
+                    }              
                 }
                     else
                     {
@@ -243,6 +275,29 @@ void sellItem()
                 cout<<endl;
             }
     }while (itemName != "");
+}
+
+void showInventory()
+{
+    string wait;
+    int i, ctr;
+
+    ctr = 1;
+
+    clearScreen();
+    cout<<"DISPLAYING INVENTORY\n\n\n";
+
+    for(i = 0; productBought[i] != ""; i++)
+    {
+        cout<<ctr<<".) "<<productBought[i];
+        cout<<"\nQUANTITY SOLD: "<<amountBought[i];
+        cout<<"\nPRICE BOUGHT: "<<priceBought[i]<<endl<<endl;
+
+        ctr++;
+    }
+
+    cout<<"Enter anything to continue: ";
+    getline(cin, wait);
 }
 
 void menu()
@@ -263,7 +318,7 @@ void menu()
             cout<<"ERROR: Please input only 1/2/3/4!\n\n";
         }
 
-        cout<<"1.) Add Product \n2.) Display Stocks \n3.) Sell Item \n4.) Exit \n\n";
+        cout<<"1.) Add Product \n2.) Display Stocks \n3.) Sell Item \n4.) Show Inventory \n5.) Exit \n\n";
 
         cout<<"Select from the choices above (1/2/3/4): ";
         getline(cin, choice);
@@ -288,15 +343,21 @@ void menu()
                 }
                     else if (choice == "4")
                     {
-                        clearScreen();
+                        failedAttempt = false;
 
-                        cout<<"Program Terminated!\n\n\n";
+                        showInventory();
                     }
-                        else
+                        else if (choice == "5")
                         {
-                            failedAttempt = true;
+                            clearScreen();
+
+                            cout<<"Program Terminated!\n\n\n";
                         }
-    }while (choice != "4");
+                            else
+                            {
+                                failedAttempt = true;
+                            }
+    }while (choice != "5");
 }
 
 void logIn()
