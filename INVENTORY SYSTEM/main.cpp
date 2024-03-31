@@ -116,9 +116,6 @@ void displayStock()
 {
     string wait;
     int i, ctr;
-    bool lowSupply;
-
-    lowSupply = false;
 
     ctr = 1;
 
